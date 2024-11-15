@@ -1,12 +1,14 @@
+import { Button } from "@/components/ui/button";
+
 export default function Home() {
   // TODO
   return (
     <>
       <h1>Hello, Home page!</h1>
-      <button>Login</button>
+      <Button>Login</Button>
       <hr></hr>
-      <button>User Wallet</button>
-      <button>Dashboard</button>
-  </>
-  )
+      <Button>User Wallet</Button>
+      <Button>Dashboard</Button>
+    </>
+  );
 }
