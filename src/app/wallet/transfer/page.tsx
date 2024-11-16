@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Hex, HttpRequestError, parseEther } from "viem"
@@ -24,17 +25,20 @@ export default function Home() {
     const {nexusClient, smartAddress, chain, balance} = useWalletStore();
     const [adUrl, setAdUrl] = useState<string>("");
     const router = useRouter();
+    const {toast} = useToast();
 
     const sendTransaction = async () => {
         if (!nexusClient) {
-            alert("Nexus client not initialized")
+            toast({title: "Nexus client not initialized"})
             return;
         }
         // validate amount and recipient
         if (amount === "" || recipient === "") {
-            alert("Amount and recipient are required")
+            toast({title: "Amount and recipient are required"})
+            // alert("Amount and recipient are required")
             return;
         }
+        toast({title: "sending transaction..."});
         let hash;
         try {
             hash = await nexusClient.sendTransaction({ calls:  
@@ -47,12 +51,21 @@ export default function Home() {
             }
             return;
         }
-        console.log("Transaction hash: ", hash) 
         const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-        console.log("Transaction receipt: ", receipt)
+        toast({title : `Transaction receipt:  ${receipt.transactionHash}`})
     }
 
     const showAdsForGasless = async () => {
+        if (!nexusClient) {
+            toast({title: "Nexus client not initialized"})
+            return;
+        }
+        // validate amount and recipient
+        if (amount === "" || recipient === "") {
+            toast({title: "Amount and recipient are required"})
+            // alert("Amount and recipient are required")
+            return;
+        }
         // fetch ad from backend api
         const res = await fetch("/api/ad-views?chain_id=" + chain?.id + "&from_address=" + smartAddress)
         const data = await res.json() as { data: Ad };
@@ -125,7 +138,7 @@ export default function Home() {
 
             {/* Actions */}
             <div className="flex flex-col gap-2">
-                <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}> Watch Ads For Gasless</Button>
+                { !gaslessDone && <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}> Watch Ads For Gasless</Button> }
                 <Button className="w-full rounded-full" onClick={() => { sendTransaction() }}>Send</Button>
             </div>
             {gaslessDone && <div> Gasless Transaction Enabled </div>}
