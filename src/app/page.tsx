@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from 'next/navigation'
 import { useWalletStore } from "@/components/stores/walletStore";
+import { Button } from "@/components/ui/button";
 import { AuthAdapter } from "@web3auth/auth-adapter";
 import {
   CHAIN_NAMESPACES,
@@ -11,10 +10,11 @@ import {
 } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
-import { useEffect  } from "react";
+import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
 export default function Home() {
   const walletStore = useWalletStore();
-  const {address} =useWalletStore();
+  const {address, smartAddress} = useWalletStore();
   const router = useRouter()
   
   const clientId =
@@ -58,12 +58,11 @@ export default function Home() {
 
   useEffect(() => {
     const initialize = async () => {
-
       await walletStore.init();
       console.log("done init", address)
     }
     initialize();
-  }, [address]);
+  }, []);
 
   const login = async () => {
     if (address) {
@@ -78,7 +77,7 @@ export default function Home() {
       <p>
         { !!address ? (
           <>
-            Logged in as{" "}
+            Logged in as EOA:
             <a
               className="text-blue-500 underline"
               href={`https://eth.blockscout.com/address/${address}`}
@@ -86,6 +85,16 @@ export default function Home() {
               rel="noreferrer"
             >
               {address}
+            </a>
+            <br />
+            Smart Account:
+            <a
+              className="text-blue-500 underline"
+              href={`https://eth.blockscout.com/address/${smartAddress}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {smartAddress}
             </a>
             <br />
             <Button

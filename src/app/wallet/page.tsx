@@ -5,43 +5,46 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { createPublicClient, http } from "viem"
-import { sepolia } from "viem/chains"
+import { baseSepolia, sepolia } from "viem/chains"
 import { useRouter } from 'next/navigation'
 const publicClient = createPublicClient({ 
   chain: sepolia,
   transport: http() 
 })
 
-
 export default function Home() {
-  const {address, init} = useWalletStore();
+  const { init, smartAddress} = useWalletStore();
   const [balance, setBalance] = useState(10n)
   const router = useRouter();
   useEffect(() => {
     async function initalize() {
-      if ( address ) {
+      if ( smartAddress ) {
         const bal = await publicClient.getBalance({
-          address: address
+          address: smartAddress
         })
         console.log(bal)
         setBalance(bal)
       } else {
         await init();
-        console.log(address)
+        console.log(smartAddress)
       }
     }
     initalize()
     console.log("useEffect")
-  }, [address, init]);
+  }, [smartAddress, init]);
 
   return <div className="grid justify-center">
       <Card> 
         <CardHeader>
-          Balance {balance}
+          Address: {smartAddress}
+          <br />
+          Balance: {balance}
+          <br />
+          Chain: {baseSepolia.name}
         </CardHeader>
       </Card>
 
-      <div>
+      <div className="flex gap-2 justify-between">
         <Button onClick={() => router.push("/wallet/transfer")} > Send </Button>
         <Button onClick={() => router.push("/wallet/receive")}> Receive </Button>
       </div>
