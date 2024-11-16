@@ -14,7 +14,7 @@ import { useEffect } from "react";
 
 export default function Home() {
   const walletStore = useWalletStore();
-  const { address, smartAddress } = useWalletStore();
+  const { address } = useWalletStore();
   const router = useRouter();
 
   const login = async () => {
@@ -35,7 +35,7 @@ export default function Home() {
     if (walletStore.web3authInstance?.status === "connected") {
       router.push("/wallet");
     }
-  }, [walletStore.web3authInstance?.status]);
+  }, []);
 
   return (
     <>
