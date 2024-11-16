@@ -23,6 +23,7 @@ export default function AdsCard(params: {
         // call api to end get ads
         handleRestart(5);
         setAdsUrl(params.adUrl)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
