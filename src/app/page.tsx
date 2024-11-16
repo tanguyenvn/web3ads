@@ -13,13 +13,14 @@ import {
 import { AuthAdapter } from "@web3auth/auth-adapter";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { useEffect, useState } from "react";
+import { useWalletStore } from "@/components/stores/walletStore";
 
 export default function Home() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
   const [, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [account, setAccount] = useState<string | null>(null);
-
+  const walletStore = useWalletStore();
   const clientId =
     "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ";
 
@@ -93,6 +94,9 @@ export default function Home() {
       loginProvider: "google",
     });
     setProvider(web3authProvider);
+    
+    walletStore.setProvider(web3authProvider);
+    
   };
 
   return (
