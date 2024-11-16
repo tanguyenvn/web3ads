@@ -1,3 +1,4 @@
+import { NexusClient } from '@biconomy/sdk';
 import { AuthAdapter } from '@web3auth/auth-adapter';
 import { CHAIN_NAMESPACES, IProvider, UX_MODE, WALLET_ADAPTERS, WEB3AUTH_NETWORK } from '@web3auth/base'
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
@@ -47,15 +48,17 @@ web3authInstance.configureAdapter(authAdapter);
 export interface WalletState {
   provider: IProvider| null;
   address: Hex | undefined;
+  nexusClient: NexusClient | null;
   init: () => Promise<void>;
   setProvider : ( provider: IProvider| null) => Promise<void>;
+  setNexusClient: (nexusClient: NexusClient | null) => void;
   removeProvider: () => void;
 }
   
 export const useWalletStore = create<WalletState>((set, get) => ({
   provider : null,
   address: undefined,
-
+  nexusClient: null,
 
   init: async () => {
     await web3authInstance.init();
@@ -101,4 +104,5 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     }))
   },
   removeProvider: () => set({ provider: null }),
+  setNexusClient: (nexusClient: NexusClient | null) => set({ nexusClient }),
 }))
