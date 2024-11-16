@@ -1,9 +1,12 @@
-import { NexusClient } from '@biconomy/sdk';
+'use client'
+import { createNexusClient, NexusClient } from '@biconomy/sdk';
 import { AuthAdapter } from '@web3auth/auth-adapter';
 import { CHAIN_NAMESPACES, IProvider, UX_MODE, WALLET_ADAPTERS, WEB3AUTH_NETWORK } from '@web3auth/base'
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
 import { Web3AuthNoModal } from '@web3auth/no-modal';
-import { Hex } from 'viem';
+import { Hex, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { baseSepolia } from 'viem/chains';
 import { create } from 'zustand'
 const clientId =
 "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ";
@@ -42,34 +45,65 @@ const authAdapter = new AuthAdapter({
     },
   },
 });
-web3authInstance.configureAdapter(authAdapter);
 
 
 export interface WalletState {
   provider: IProvider| null;
   address: Hex | undefined;
+  smartAddress: Hex | undefined;
   nexusClient: NexusClient | null;
   init: () => Promise<void>;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   setProvider : ( provider: IProvider| null) => Promise<void>;
   setNexusClient: (nexusClient: NexusClient | null) => void;
   removeProvider: () => void;
 }
   
+const bundlerUrl = "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
 export const useWalletStore = create<WalletState>((set, get) => ({
   provider : null,
   address: undefined,
+  smartAddress: undefined,
   nexusClient: null,
 
   init: async () => {
+    const state = get();
+    web3authInstance.configureAdapter(authAdapter);
+    if (state.address) return;
     await web3authInstance.init();
+    console.log(web3authInstance.connected)
     if (web3authInstance.connected) {
+      const address = await web3authInstance.provider?.request({
+        method: "eth_accounts",
+      });
+      console.log(address);
+
+      // Smart Account
+      const privateKey = await web3authInstance.provider?.request({
+        method: "eth_private_key",
+      });
+      const account = privateKeyToAccount(`0x${privateKey}`)
+      const nexusClient = await createNexusClient({ 
+          signer: account, 
+          chain: baseSepolia,
+          transport: http(), 
+          bundlerTransport: http(bundlerUrl), 
+      });
+      const smartAccountAddress = nexusClient.account.address;
+      
+      console.log("connected");
+
       const {provider} = web3authInstance;
       const localAddress = await provider?.request<undefined, Hex[]>({
         method: "eth_accounts",
       });
+      console.log(localAddress)
       set(() => ({
           provider: provider,
-          address: localAddress?.shift(),
+          address: localAddress?.at(0),
+          smartAddress: smartAccountAddress,
+          nexusClient: nexusClient,
       }))
     }
   },
@@ -88,10 +122,16 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
     set(() => ({
       provider: provider,
-      address: localAddress?.shift(),
+      address: localAddress?.at(0),
     })) 
   },
-
+  logout: async () =>{
+    await web3authInstance.logout();
+    set(() => ({
+      provider: undefined,
+      address: undefined,
+    }))  
+  },
   setProvider: async ( provider ) =>  {
     const localAddress = await provider?.request<undefined, Hex[]>({
       method: "eth_accounts",
@@ -100,7 +140,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
     set(() => ({
         provider: provider,
-        address: localAddress?.shift(),
+        address: localAddress?.at(0),
     }))
   },
   removeProvider: () => set({ provider: null }),
