@@ -4,6 +4,7 @@ import { useWalletStore } from "@/components/stores/walletStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
   const walletStore = useWalletStore();
@@ -23,6 +24,12 @@ export default function Home() {
     }
     await walletStore.loginWithWorldID();
   };
+
+  useEffect(() => {
+    if (walletStore.web3authInstance?.status === "connected") {
+      router.push("/wallet");
+    }
+  }, [walletStore.web3authInstance?.status]);
 
   return (
     <>
