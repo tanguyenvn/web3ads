@@ -26,18 +26,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { init, smartAddress } = useWalletStore();
+  const { init, smartAddress, web3authInstance } = useWalletStore();
 
   useEffect(() => {
     async function initalize() {
-      if (!smartAddress) {
+      if (!web3authInstance) {
         await init();
         console.log(smartAddress)
       }
     }
     initalize();
     console.log("useEffect");
-  }, [smartAddress, init]);
+  }, [web3authInstance, init]);
 
   return (
     <html lang="en">
