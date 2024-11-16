@@ -2,11 +2,12 @@
 
 import { useWalletStore } from "@/components/stores/walletStore";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const walletStore = useWalletStore();
-  const { address, smartAddress  } = useWalletStore();
+  const { address, smartAddress } = useWalletStore();
   const router = useRouter();
 
   const login = async () => {
@@ -25,8 +26,7 @@ export default function Home() {
 
   return (
     <>
-      <h1>Hello, Home page!</h1>
-      <p>
+      <div>
         {!!address ? (
           <>
             Logged in as EOA:
@@ -51,6 +51,20 @@ export default function Home() {
             <br />
             <Button
               onClick={() => {
+                router.push("/wallet");
+              }}
+            >
+              User Wallet
+            </Button>
+            <Button
+              onClick={() => {
+                router.push("/dashboard");
+              }}
+            >
+              Dashboard
+            </Button>
+            <Button
+              onClick={() => {
                 walletStore.logout();
               }}
             >
@@ -59,29 +73,28 @@ export default function Home() {
           </>
         ) : (
           <>
-            <Button onClick={() => login()}>Login with Google</Button>
-            <Button onClick={() => loginWithWorldID()}>
-              Login with WorldID
-            </Button>
+            <div className="flex h-screen justify-center items-center">
+              <div className="w-[400px] gap-8">
+                <Card>
+                  <CardHeader className="mt-2">
+                    <CardTitle>Sign in</CardTitle>
+                    <CardDescription className="text-lg">
+                      Enjoy duty-free transactions!
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-2">
+                    <Button className="rounded-full w-full" onClick={() => login()}>Login with Google</Button>
+                    <Button className="rounded-full w-full" onClick={() => loginWithWorldID()}>
+                      Login with WorldID
+                    </Button>
+                    <div className="text-xs text-gray-500 text-center mt-6">Powered by Web3Ads</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </>
         )}
-      </p>
-
-      <hr></hr>
-      <Button
-        onClick={() => {
-          router.push("/wallet");
-        }}
-      >
-        User Wallet
-      </Button>
-      <Button
-        onClick={() => {
-          router.push("/dashboard");
-        }}
-      >
-        Dashboard
-      </Button>
+      </div>
     </>
   );
 }
