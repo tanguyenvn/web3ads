@@ -6,7 +6,7 @@ import { Card, CardHeader } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { createPublicClient, http } from "viem"
 import { sepolia } from "viem/chains"
-
+import { useRouter } from 'next/navigation'
 const publicClient = createPublicClient({ 
   chain: sepolia,
   transport: http() 
@@ -16,16 +16,18 @@ const publicClient = createPublicClient({
 export default function Home() {
   const {address, init} = useWalletStore();
   const [balance, setBalance] = useState(10n)
-  
+  const router = useRouter();
   useEffect(() => {
     async function initalize() {
       if ( address ) {
         const bal = await publicClient.getBalance({
           address: address
         })
+        console.log(bal)
         setBalance(bal)
       } else {
         await init();
+        console.log(address)
       }
     }
     initalize()
@@ -40,8 +42,8 @@ export default function Home() {
       </Card>
 
       <div>
-        <Button> Send </Button>
-        <Button> Receive </Button>
+        <Button onClick={() => router.push("/wallet/transfer")} > Send </Button>
+        <Button onClick={() => router.push("/wallet/receive")}> Receive </Button>
       </div>
   </div>
 }

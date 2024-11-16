@@ -1,3 +1,4 @@
+'use client'
 import { AuthAdapter } from '@web3auth/auth-adapter';
 import { CHAIN_NAMESPACES, IProvider, UX_MODE, WALLET_ADAPTERS, WEB3AUTH_NETWORK } from '@web3auth/base'
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
@@ -41,13 +42,14 @@ const authAdapter = new AuthAdapter({
     },
   },
 });
-web3authInstance.configureAdapter(authAdapter);
 
 
 export interface WalletState {
   provider: IProvider| null;
   address: Hex | undefined;
   init: () => Promise<void>;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   setProvider : ( provider: IProvider| null) => Promise<void>;
   removeProvider: () => void;
 }
@@ -58,17 +60,18 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
 
   init: async () => {
+    web3authInstance.configureAdapter(authAdapter);
     await web3authInstance.init();
-    if (web3authInstance.connected) {
+    console.log(web3authInstance.connected)
       const {provider} = web3authInstance;
       const localAddress = await provider?.request<undefined, Hex[]>({
         method: "eth_accounts",
       });
+      console.log(localAddress)
       set(() => ({
           provider: provider,
-          address: localAddress?.shift(),
+          address: localAddress?.at(0),
       }))
-    }
   },
   login : async () => {
     const state = get();
@@ -85,10 +88,16 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
     set(() => ({
       provider: provider,
-      address: localAddress?.shift(),
+      address: localAddress?.at(0),
     })) 
   },
-
+  logout: async () =>{
+    await web3authInstance.logout();
+    set(() => ({
+      provider: undefined,
+      address: undefined,
+    }))  
+  },
   setProvider: async ( provider ) =>  {
     const localAddress = await provider?.request<undefined, Hex[]>({
       method: "eth_accounts",
@@ -97,7 +106,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
     set(() => ({
         provider: provider,
-        address: localAddress?.shift(),
+        address: localAddress?.at(0),
     }))
   },
   removeProvider: () => set({ provider: null }),
