@@ -2,18 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 
-import { Web3AuthNoModal } from "@web3auth/no-modal";
+import { useWalletStore } from "@/components/stores/walletStore";
+import { AuthAdapter } from "@web3auth/auth-adapter";
 import {
-  WALLET_ADAPTERS,
   CHAIN_NAMESPACES,
   IProvider,
-  WEB3AUTH_NETWORK,
   UX_MODE,
+  WALLET_ADAPTERS,
+  WEB3AUTH_NETWORK,
 } from "@web3auth/base";
-import { AuthAdapter } from "@web3auth/auth-adapter";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { Web3AuthNoModal } from "@web3auth/no-modal";
 import { useEffect, useState } from "react";
-import { useWalletStore } from "@/components/stores/walletStore";
 
 export default function Home() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
@@ -72,11 +72,11 @@ export default function Home() {
           setLoggedIn(true);
           setProvider(web3authInstance.provider);
           console.log("connected");
-          const address: any = await web3authInstance.provider?.request({
+          const address = await web3authInstance.provider?.request({
             method: "eth_accounts",
           });
           console.log(address);
-          setAccount(address[0]);
+          setAccount((address as string[])[0]);
         }
       } catch (error) {
         console.error(error);

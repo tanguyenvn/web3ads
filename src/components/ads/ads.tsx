@@ -23,13 +23,13 @@ export default function AdsCard(params: {
         // call api to end get ads
         handleRestart(5);
         setAdsUrl("https://s2.coinmarketcap.com/static/img/coins/64x64/1.png")
-    }, [])
+    }, [handleRestart])
 
     useEffect(() => {
         if ( !isActive && adsUrl ) {
             params.onClosed(secondsLeft === 0 )
         }
-    }, [isActive, adsUrl])
+    }, [isActive, adsUrl, params, secondsLeft])
 
     const close = () => {
         // call api to end ads
