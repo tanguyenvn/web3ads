@@ -1,5 +1,9 @@
 "use client";
-import { createBicoPaymasterClient, createNexusClient, NexusClient } from "@biconomy/sdk";
+import {
+  createBicoPaymasterClient,
+  createNexusClient,
+  NexusClient,
+} from "@biconomy/sdk";
 import { AuthAdapter } from "@web3auth/auth-adapter";
 import {
   CHAIN_NAMESPACES,
@@ -64,7 +68,7 @@ export interface WalletState {
   balance: string;
   nexusClient: NexusClient | null;
   chain: Chain;
-  web3authInstance: Web3AuthNoModal| null;
+  web3authInstance: Web3AuthNoModal | null;
   init: () => Promise<void>;
   login: () => Promise<void>;
   loginWithWorldID: () => Promise<void>;
@@ -73,9 +77,11 @@ export interface WalletState {
   setNexusClient: (nexusClient: NexusClient | null) => void;
   removeProvider: () => void;
 }
-  
-const bundlerUrl = "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
-const paymasterUrl = "https://paymaster.biconomy.io/api/v2/84532/LbZVPCC9h.5cc473f0-4bff-424d-8148-831d519fc685"; 
+
+const bundlerUrl =
+  "https://bundler.biconomy.io/api/v3/84532/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44";
+const paymasterUrl =
+  "https://paymaster.biconomy.io/api/v2/84532/LbZVPCC9h.5cc473f0-4bff-424d-8148-831d519fc685";
 
 export const useWalletStore = create<WalletState>((set, get) => ({
   provider: null,
@@ -99,10 +105,10 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     await web3authInstance.init();
 
     if (!web3authInstance.connected) {
-      set(()=>({
-        web3authInstance
-      }))
-      return
+      set(() => ({
+        web3authInstance,
+      }));
+      return;
     }
 
     const address = await web3authInstance.provider?.request({
@@ -120,22 +126,24 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       chain: get().chain,
       transport: http(),
       bundlerTransport: http(bundlerUrl),
-      paymaster: createBicoPaymasterClient({paymasterUrl})
+      paymaster: createBicoPaymasterClient({ paymasterUrl }),
     });
     const smartAccountAddress = nexusClient.account.address;
 
-    const publicClient = createPublicClient({ 
+    const publicClient = createPublicClient({
       chain: get().chain,
-      transport: http() 
-    })
-    
-    publicClient.getBalance({
-      address: smartAccountAddress
-    }).then((balance) => {
-      set(() => ({
-        balance: formatEther(balance).toString().slice(0, 5)
-      }))
-    })
+      transport: http(),
+    });
+
+    publicClient
+      .getBalance({
+        address: smartAccountAddress,
+      })
+      .then((balance) => {
+        set(() => ({
+          balance: formatEther(balance).toString().slice(0, 5),
+        }));
+      });
 
     console.log("connected");
 
@@ -149,7 +157,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       address: localAddress?.at(0),
       smartAddress: smartAccountAddress,
       nexusClient: nexusClient,
-      web3authInstance
+      web3authInstance,
     }));
   },
   login: async () => {
@@ -163,18 +171,21 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   },
   loginWithWorldID: async () => {
     const state = get();
-    if (state.address|| state.web3authInstance === null) {
+    if (state.address || state.web3authInstance === null) {
       return;
     }
 
-    const provider = await state.web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
-      loginProvider: "jwt",
-      extraLoginOptions: {
-        domain: "https://web3auth.jp.auth0.com",
-        verifierIdField: "sub",
-        connection: "worldcoin",
-      },
-    });
+    const provider = await state.web3authInstance.connectTo(
+      WALLET_ADAPTERS.AUTH,
+      {
+        loginProvider: "jwt",
+        extraLoginOptions: {
+          domain: "https://web3auth.jp.auth0.com",
+          verifierIdField: "sub",
+          connection: "worldcoin",
+        },
+      }
+    );
     const localAddress = await provider?.request<undefined, Hex[]>({
       method: "eth_accounts",
     });
@@ -190,7 +201,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       provider: undefined,
       address: undefined,
       smartAddress: undefined,
-      nexusClient: undefined
+      nexusClient: undefined,
     }));
     await web3authInstance?.logout();
   },

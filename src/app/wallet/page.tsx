@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useWalletStore } from "@/components/stores/walletStore"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader } from "@/components/ui/card"
+import { useWalletStore } from "@/components/stores/walletStore";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useRouter } from 'next/navigation'
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { smartAddress, balance, logout } = useWalletStore();
@@ -21,8 +21,20 @@ export default function Home() {
       {/* NAVBAR */}
       <div className="flex gap-2 justify-between w-[600px]">
         <div className="flex gap-2">
-          <Button className="rounded-full" onClick={() => router.push("/")}>Home</Button>
-          <Button className="rounded-full bg-gray-500" onClick={() => window.open(`https://base-sepolia.blockscout.com/address/${smartAddress}`, "_blank")}>Activity</Button>
+          <Button className="rounded-full" onClick={() => router.push("/")}>
+            Home
+          </Button>
+          <Button
+            className="rounded-full bg-gray-500"
+            onClick={() =>
+              window.open(
+                `https://base-sepolia.blockscout.com/address/${smartAddress}`,
+                "_blank"
+              )
+            }
+          >
+            Activity
+          </Button>
         </div>
         {/* Chain */}
         <div className="flex gap-2">
@@ -31,16 +43,24 @@ export default function Home() {
               <SelectValue placeholder="Chain: Base Sepolia" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="baseSepolia">Base Sepolia</SelectItem>
-                <SelectItem value="sepolia">Ethereum Sepolia</SelectItem>
-                <SelectItem value="sepolia">Polygon Amoy</SelectItem>
+              <SelectItem value="baseSepolia">Base Sepolia</SelectItem>
+              <SelectItem value="sepolia">Ethereum Sepolia</SelectItem>
+              <SelectItem value="sepolia">Polygon Amoy</SelectItem>
             </SelectContent>
           </Select>
-          <Button className="rounded-full bg-gray-500" onClick={() => logout() }>Log out</Button>
+          <Button
+            className="rounded-full bg-gray-500"
+            onClick={async () => {
+              await logout();
+              router.push("/");
+            }}
+          >
+            Log out
+          </Button>
         </div>
       </div>
-      
-      <Card className="w-full rounded-xl bg-gray-100"> 
+
+      <Card className="w-full rounded-xl bg-gray-100">
         <CardHeader>
           <div className="mb-5">
             <strong>Smart Address:</strong> {smartAddress}
@@ -48,11 +68,21 @@ export default function Home() {
             <strong>Balance:</strong> {balance}
           </div>
           <div className="flex justify-end gap-2">
-            <Button className="rounded-full" onClick={() => router.push("/wallet/transfer")}>Send</Button>
-            <Button className="rounded-full" onClick={() => router.push("/wallet/receive")}>Receive</Button>
+            <Button
+              className="rounded-full"
+              onClick={() => router.push("/wallet/transfer")}
+            >
+              Send
+            </Button>
+            <Button
+              className="rounded-full"
+              onClick={() => router.push("/wallet/receive")}
+            >
+              Receive
+            </Button>
           </div>
         </CardHeader>
       </Card>
     </div>
-  )
+  );
 }
