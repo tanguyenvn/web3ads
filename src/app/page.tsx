@@ -94,9 +94,8 @@ export default function Home() {
       loginProvider: "google",
     });
     setProvider(web3authProvider);
-    
+
     walletStore.setProvider(web3authProvider);
-    
   };
 
   return (
@@ -104,7 +103,18 @@ export default function Home() {
       <h1>Hello, Home page!</h1>
       <p>
         {loggedIn ? (
-          `Logged in as ${account}`
+          <>
+            Logged in as ${account}
+            <br />
+            <Button
+              onClick={() => {
+                web3auth?.logout();
+                setLoggedIn(false);
+              }}
+            >
+              Logout
+            </Button>
+          </>
         ) : (
           <Button onClick={() => login()}>Login</Button>
         )}
