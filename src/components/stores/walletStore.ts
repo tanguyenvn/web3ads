@@ -32,11 +32,11 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
-const web3authInstance = new Web3AuthNoModal({
-  clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
-  privateKeyProvider,
-});
+// const web3authInstance = new Web3AuthNoModal({
+//   clientId,
+//   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+//   privateKeyProvider,
+// });
 
 const authAdapter = new AuthAdapter({
   adapterSettings: {
@@ -62,6 +62,7 @@ export interface WalletState {
   address: Hex | undefined;
   smartAddress: Hex | undefined;
   nexusClient: NexusClient | null;
+  web3authInstance: Web3AuthNoModal| null;
   init: () => Promise<void>;
   login: () => Promise<void>;
   loginWithWorldID: () => Promise<void>;
@@ -78,18 +79,32 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   address: undefined,
   smartAddress: undefined,
   nexusClient: null,
+  web3authInstance: null,
 
   init: async () => {
     const state = get();
+    const web3authInstance = new Web3AuthNoModal({
+      clientId,
+      web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+      privateKeyProvider,
+    });
+
     web3authInstance.configureAdapter(authAdapter);
     if (state.address) return;
     await web3authInstance.init();
 
-    console.log(web3authInstance.connected);
+    if (!web3authInstance.connected) {
+      set(()=>({
+        web3authInstance
+      }))
+      return
+    }
+
     const address = await web3authInstance.provider?.request({
       method: "eth_accounts",
     });
     console.log(address);
+
 
     // Smart Account
     const privateKey = await web3authInstance.provider?.request({
@@ -116,33 +131,27 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       address: localAddress?.at(0),
       smartAddress: smartAccountAddress,
       nexusClient: nexusClient,
+      web3authInstance
     }));
   },
   login: async () => {
     const state = get();
-    if (state.address) {
+    if (state.address || state.web3authInstance === null) {
       return;
     }
 
-    const provider = await web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
+    await state.web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
       loginProvider: "google",
     });
-    const localAddress = await provider?.request<undefined, Hex[]>({
-      method: "eth_accounts",
-    });
 
-    set(() => ({
-      provider: provider,
-      address: localAddress?.at(0),
-    }));
   },
   loginWithWorldID: async () => {
     const state = get();
-    if (state.address) {
+    if (state.address|| state.web3authInstance === null) {
       return;
     }
 
-    const provider = await web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
+    const provider = await state.web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
       loginProvider: "jwt",
       extraLoginOptions: {
         domain: "https://web3auth.jp.auth0.com",
@@ -160,11 +169,14 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     }));
   },
   logout: async () => {
-    await web3authInstance.logout();
+    const { web3authInstance } = get();
     set(() => ({
       provider: undefined,
       address: undefined,
+      smartAddress: undefined,
+      nexusClient: undefined
     }));
+    await web3authInstance?.logout();
   },
   setProvider: async (provider) => {
     const localAddress = await provider?.request<undefined, Hex[]>({

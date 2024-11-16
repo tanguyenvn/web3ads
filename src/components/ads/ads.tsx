@@ -23,7 +23,8 @@ export default function AdsCard(params: {
         // call api to end get ads
         handleRestart(5);
         setAdsUrl("https://s2.coinmarketcap.com/static/img/coins/64x64/1.png")
-    }, [handleRestart])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         if ( !isActive && adsUrl ) {

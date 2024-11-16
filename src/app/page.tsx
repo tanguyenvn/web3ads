@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const walletStore = useWalletStore();
-  const { address, smartAddress } = useWalletStore();
+  const { address, smartAddress  } = useWalletStore();
   const router = useRouter();
 
   const login = async () => {
