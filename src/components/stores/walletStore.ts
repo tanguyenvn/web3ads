@@ -10,7 +10,7 @@ import {
 } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
-import { Chain, Hex, http } from "viem";
+import { Chain, createPublicClient, formatEther, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import { create } from "zustand";
@@ -61,6 +61,7 @@ export interface WalletState {
   provider: IProvider | null;
   address: Hex | undefined;
   smartAddress: Hex | undefined;
+  balance: string;
   nexusClient: NexusClient | null;
   chain: Chain;
   web3authInstance: Web3AuthNoModal| null;
@@ -83,6 +84,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   nexusClient: null,
   chain: baseSepolia,
   web3authInstance: null,
+  balance: "0",
 
   init: async () => {
     const state = get();
@@ -108,7 +110,6 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     });
     console.log(address);
 
-
     // Smart Account
     const privateKey = await web3authInstance.provider?.request({
       method: "eth_private_key",
@@ -116,12 +117,25 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     const account = privateKeyToAccount(`0x${privateKey}`);
     const nexusClient = await createNexusClient({
       signer: account,
-      chain: baseSepolia,
+      chain: get().chain,
       transport: http(),
       bundlerTransport: http(bundlerUrl),
       paymaster: createBicoPaymasterClient({paymasterUrl})
     });
     const smartAccountAddress = nexusClient.account.address;
+
+    const publicClient = createPublicClient({ 
+      chain: get().chain,
+      transport: http() 
+    })
+    
+    publicClient.getBalance({
+      address: smartAccountAddress
+    }).then((balance) => {
+      set(() => ({
+        balance: formatEther(balance).toString().slice(0, 5)
+      }))
+    })
 
     console.log("connected");
 
@@ -143,11 +157,9 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     if (state.address || state.web3authInstance === null) {
       return;
     }
-
     await state.web3authInstance.connectTo(WALLET_ADAPTERS.AUTH, {
       loginProvider: "google",
     });
-
   },
   loginWithWorldID: async () => {
     const state = get();

@@ -3,10 +3,6 @@
 import { useWalletStore } from "@/components/stores/walletStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
-import { useEffect, useState } from "react"
-import { createPublicClient, formatEther, http } from "viem"
-import { baseSepolia, sepolia } from "viem/chains"
-import { useRouter } from 'next/navigation'
 import {
   Select,
   SelectContent,
@@ -14,30 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  const { smartAddress, chain } = useWalletStore();
-  const [balance, setBalance] = useState("")
+  const { smartAddress, balance } = useWalletStore();
   const router = useRouter();
-
-  useEffect(() => {
-    async function initalize() {
-      if ( smartAddress ) {
-        const publicClient = createPublicClient({ 
-          chain: chain,
-          transport: http() 
-        })
-        
-        const weiBalance = await publicClient.getBalance({
-          address: smartAddress
-        })
-        console.log(weiBalance)
-        setBalance(formatEther(weiBalance).toString())
-      }
-    }
-    initalize()
-    console.log("useEffect")
-  }, [smartAddress]);
 
   return (
     <div className="grid justify-center p-4 gap-3 w-[600px]">
@@ -68,8 +45,8 @@ export default function Home() {
             <strong>Balance:</strong> {balance}
           </div>
           <div className="flex justify-end gap-2">
-            <Button className="bg-blue-500 rounded-xl" onClick={() => router.push("/wallet/transfer")} > Send </Button>
-            <Button className="bg-blue-500 rounded-xl" onClick={() => router.push("/wallet/receive")}> Receive </Button>
+            <Button className="rounded-xl" onClick={() => router.push("/wallet/transfer")} > Send </Button>
+            <Button className="rounded-xl" onClick={() => router.push("/wallet/receive")}> Receive </Button>
           </div>
         </CardHeader>
       </Card>
