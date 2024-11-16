@@ -15,15 +15,11 @@ export default function Result(params: {
     isSuccess: boolean,
 }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [txHash, setTxHash] = useState("");
 
     useEffect(() => {
         if (params.sendingTx) {
             setIsOpen(true);
         }
-        setIsSuccess(params.isSuccess);
-        setTxHash(params.txHash);
     }, [params.sendingTx, params.isSuccess, params.txHash]);
 
     return <>

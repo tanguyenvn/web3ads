@@ -1,7 +1,6 @@
 
 'use client'
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCountdownTimer } from "@/lib/countdown";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -31,11 +30,6 @@ export default function AdsCard(params: {
             params.onClosed(secondsLeft === 0)
         }
     }, [isActive, adsUrl, params, secondsLeft])
-
-    const close = () => {
-        // call api to end ads
-        params.onClosed(secondsLeft === 0)
-    }
 
     return <>
         <div className="absolute w-full h-full bg-black opacity-50 top-0 left-0" />
