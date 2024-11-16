@@ -44,8 +44,10 @@ export default function Home() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="baseSepolia">Base Sepolia</SelectItem>
-              <SelectItem value="sepolia">Ethereum Sepolia</SelectItem>
-              <SelectItem value="sepolia">Polygon Amoy</SelectItem>
+              <SelectItem value="ethereumSepolia">Ethereum Sepolia</SelectItem>
+              <SelectItem value="polygonAmoy">Polygon Amoy</SelectItem>
+              <SelectItem value="flowEVM">Flow EVM Testnet</SelectItem>
+              <SelectItem value="neonEVM">Neon EVM Testnet</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -63,10 +65,19 @@ export default function Home() {
       <Card className="w-full rounded-xl bg-gray-100">
         <CardHeader>
           <div className="mb-5">
-            <strong>Smart Address:</strong> {smartAddress}
+            <strong>Smart Address:</strong>{" "}
+            <a
+              className="text-blue-800 underline text-sm"
+              href={`https://base-sepolia.blockscout.com/address/${smartAddress}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {smartAddress}
+            </a>
             <br />
-            <strong>Balance:</strong> {balance}
+            <strong>Balance:</strong> {balance} ETH
           </div>
+
           <div className="flex justify-end gap-2">
             <Button
               className="rounded-full"
