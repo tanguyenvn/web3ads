@@ -100,7 +100,6 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       return
     }
 
-    // console.log(web3authInstance.connected);
     const address = await web3authInstance.provider?.request({
       method: "eth_accounts",
     });
