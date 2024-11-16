@@ -23,7 +23,7 @@ export default function Home() {
     const [recipient, setRecipient] = useState("")
     const [showAds, setShowAds] = useState(false)
     const [gaslessDone, setGaslessDone] = useState(false)
-    const {nexusClient, smartAddress, chain, balance} = useWalletStore();
+    const {nexusClient, nonPaymasterNexusClient, smartAddress, chain, balance} = useWalletStore();
     const [adUrl, setAdUrl] = useState<string>("");
     const [txHash, setTxHash] = useState<string>("");
     const [sendingTx, setSendingTx] = useState(false);
@@ -32,7 +32,7 @@ export default function Home() {
     const {toast} = useToast();
 
     const sendTransaction = async () => {
-        if (!nexusClient) {
+        if (!nexusClient || !nonPaymasterNexusClient) {
             toast({title: "Nexus client not initialized"})
             return;
         }
@@ -49,20 +49,27 @@ export default function Home() {
         try {
             setSendingTx(true);
             try {
-                hash = await nexusClient.sendTransaction({ calls:  
-                    [{to : recipient as Hex, value: parseEther(amount)}] },
+                hash = await nexusClient.sendTransaction({ 
+                    calls: [{to : recipient as Hex, value: parseEther(amount)}] },
                 ); 
             } catch (e) {
                 if (e instanceof HttpRequestError) {
                     // if the error is 417 (webhook failed)
-                    alert("Webhook failed, trying again...")
+                    console.log("Webhook failed, use non paymaster nexus client")
+                    hash = await nonPaymasterNexusClient.sendTransaction({ 
+                        calls: [{to : recipient as Hex, value: parseEther(amount)}] },
+                    ); 
+                } else {
+                    setTxSuccess(false);
+                    return;
                 }
-                setTxSuccess(false);
-                return;
             }
             const receipt = await nexusClient.waitForTransactionReceipt({ hash });
             setTxHash(receipt.transactionHash)
             setTxSuccess(true);
+        } catch (e) {
+            console.log(e)
+            setTxSuccess(false);
         } finally {
             setSendingTx(false);
         }
@@ -74,9 +81,12 @@ export default function Home() {
             return;
         }
         // validate amount and recipient
-        if (amount === "" || recipient === "") {
+        if (amount === "" || recipient === "" || Number(amount) <= 0) {
             toast({title: "Amount and recipient are required"})
-            // alert("Amount and recipient are required")
+            return;
+        }
+        if (Number(amount) > Number(balance)) {
+            toast({title: "You're trying to send more than your balance"})
             return;
         }
         // fetch ad from backend api

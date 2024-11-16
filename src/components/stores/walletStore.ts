@@ -67,6 +67,7 @@ export interface WalletState {
   smartAddress: Hex | undefined;
   balance: string;
   nexusClient: NexusClient | null;
+  nonPaymasterNexusClient: NexusClient | null;
   chain: Chain;
   web3authInstance: Web3AuthNoModal | null;
   init: () => Promise<void>;
@@ -74,7 +75,6 @@ export interface WalletState {
   loginWithWorldID: () => Promise<void>;
   logout: () => Promise<void>;
   setProvider: (provider: IProvider | null) => Promise<void>;
-  setNexusClient: (nexusClient: NexusClient | null) => void;
   removeProvider: () => void;
 }
 
@@ -88,6 +88,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   address: undefined,
   smartAddress: undefined,
   nexusClient: null,
+  nonPaymasterNexusClient: null,
   chain: baseSepolia,
   web3authInstance: null,
   balance: "0",
@@ -128,6 +129,12 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       bundlerTransport: http(bundlerUrl),
       paymaster: createBicoPaymasterClient({ paymasterUrl }),
     });
+    const nonPaymasterNexusClient = await createNexusClient({
+      signer: account,
+      chain: get().chain,
+      transport: http(),
+      bundlerTransport: http(bundlerUrl),
+    });
     const smartAccountAddress = nexusClient.account.address;
 
     const publicClient = createPublicClient({
@@ -157,6 +164,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       address: localAddress?.at(0),
       smartAddress: smartAccountAddress,
       nexusClient: nexusClient,
+      nonPaymasterNexusClient: nonPaymasterNexusClient,
       web3authInstance,
     }));
   },
@@ -216,5 +224,4 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     }));
   },
   removeProvider: () => set({ provider: null }),
-  setNexusClient: (nexusClient: NexusClient | null) => set({ nexusClient }),
 }));
