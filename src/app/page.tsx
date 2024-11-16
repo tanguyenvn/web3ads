@@ -11,7 +11,6 @@ import {
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
 import { useRouter } from 'next/navigation';
-import { useEffect } from "react";
 export default function Home() {
   const walletStore = useWalletStore();
   const {address, smartAddress} = useWalletStore();
@@ -55,14 +54,6 @@ export default function Home() {
     },
   });
   web3authInstance.configureAdapter(authAdapter);
-
-  useEffect(() => {
-    const initialize = async () => {
-      await walletStore.init();
-      console.log("done init", address)
-    }
-    initialize();
-  }, []);
 
   const login = async () => {
     if (address) {
