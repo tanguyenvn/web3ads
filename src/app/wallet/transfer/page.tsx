@@ -2,6 +2,7 @@
 import { Ad } from "@/app/utils/interface"
 import AdsCard from "@/components/ads/ads"
 import { useWalletStore } from "@/components/stores/walletStore"
+import Result from "@/components/transaction/result"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,9 @@ export default function Home() {
     const [gaslessDone, setGaslessDone] = useState(false)
     const {nexusClient, smartAddress, chain, balance} = useWalletStore();
     const [adUrl, setAdUrl] = useState<string>("");
+    const [txHash, setTxHash] = useState<string>("");
+    const [sendingTx, setSendingTx] = useState(false);
+    const [txSuccess, setTxSuccess] = useState(false);
     const router = useRouter();
     const {toast} = useToast();
 
@@ -33,26 +37,35 @@ export default function Home() {
             return;
         }
         // validate amount and recipient
-        if (amount === "" || recipient === "") {
+        if (amount === "" || recipient === "" || Number(amount) <= 0) {
             toast({title: "Amount and recipient are required"})
-            // alert("Amount and recipient are required")
             return;
         }
-        toast({title: "sending transaction..."});
+        if (Number(amount) > Number(balance)) {
+            toast({title: "You're trying to send more than your balance"})
+            return;
+        }
         let hash;
         try {
-            hash = await nexusClient.sendTransaction({ calls:  
-                [{to : recipient as Hex, value: parseEther(amount)}] },
-            ); 
-        } catch (e) {
-            if (e instanceof HttpRequestError) {
-                // if the error is 417 (webhook failed)
-                alert("Webhook failed, trying again...")
+            setSendingTx(true);
+            try {
+                hash = await nexusClient.sendTransaction({ calls:  
+                    [{to : recipient as Hex, value: parseEther(amount)}] },
+                ); 
+            } catch (e) {
+                if (e instanceof HttpRequestError) {
+                    // if the error is 417 (webhook failed)
+                    alert("Webhook failed, trying again...")
+                }
+                setTxSuccess(false);
+                return;
             }
-            return;
+            const receipt = await nexusClient.waitForTransactionReceipt({ hash });
+            setTxHash(receipt.transactionHash)
+            setTxSuccess(true);
+        } finally {
+            setSendingTx(false);
         }
-        const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-        toast({title : `Transaction receipt:  ${receipt.transactionHash}`})
     }
 
     const showAdsForGasless = async () => {
@@ -134,14 +147,14 @@ export default function Home() {
                     <label className="text-sm font-semibold">Amount</label>
                     <Input className="rounded-full" onChange={(e) => setAmount(e.target.value)} value={amount} placeholder="0" />
                 </div>
+                <Result sendingTx={sendingTx} txHash={txHash} isSuccess={txSuccess} />
             </div>
 
             {/* Actions */}
             <div className="flex flex-col gap-2">
-                { !gaslessDone && <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}> Watch Ads For Gasless</Button> }
-                <Button className="w-full rounded-full" onClick={() => { sendTransaction() }}>Send</Button>
+                { !gaslessDone && <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}>Watch ads to enjoy duty-free transactions</Button> }
+                <Button className={gaslessDone ? "w-full rounded-full bg-green-600 text-white" : "w-full rounded-full"} onClick={() => { sendTransaction() }}>{gaslessDone ? "Send (Gasless)" : "Send"}</Button>
             </div>
-            {gaslessDone && <div> Gasless Transaction Enabled </div>}
             {showAds && <AdsCard adUrl={adUrl} onClosed={(result) => {onAdsEnded(result)}} />}
         </div>
     )
