@@ -23,9 +23,11 @@ export default function Home() {
         const bal = await publicClient.getBalance({
           address: address
         })
+        console.log(bal)
         setBalance(bal)
       } else {
         await init();
+        console.log(address)
       }
     }
     initalize()
