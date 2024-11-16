@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Hex, HttpRequestError, parseEther } from "viem";
+import { IDKitWidget, VerificationLevel } from "@worldcoin/idkit";
 
 export default function Home() {
   const [amount, setAmount] = useState("");
@@ -31,6 +32,31 @@ export default function Home() {
   const [txSuccess, setTxSuccess] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  // TODO: Calls your implemented server route
+  const handleVerify = async (proof: any) => {
+    console.log("proof", proof);
+    const response = await fetch("/api/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(proof),
+    });
+    if (response.ok) {
+      const { verified } = await response.json();
+      return verified;
+    } else {
+      const { code, detail } = await response.json();
+      throw new Error(`Error Code ${code}: ${detail}`);
+    }
+  };
+
+  // TODO: Functionality after verifying
+  const onSuccess = async () => {
+    console.log("Success");
+    await sendTransaction();
+  };
 
   const sendTransaction = async () => {
     if (Number(amount) <= 0) {
@@ -224,6 +250,23 @@ export default function Home() {
           >
             Watch ads to enjoy duty-free transactions
           </Button>
+        )}
+        {gaslessDone && (
+          <div>
+            <IDKitWidget
+              app_id="app_staging_984b9e010eef741ff95582c99ed6e050"
+              action="verify-as-human-for-gasless-transaction"
+              onSuccess={onSuccess} // callback when the modal is closed
+              handleVerify={handleVerify} // optional callback when the proof is received
+              verification_level={VerificationLevel.Device}
+            >
+              {({ open }) => (
+                <Button className="w-full rounded-full" onClick={open}>
+                  Verify with World ID
+                </Button>
+              )}
+            </IDKitWidget>
+          </div>
         )}
         <Button
           className={
