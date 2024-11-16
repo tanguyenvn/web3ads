@@ -4,8 +4,8 @@ import { useWalletStore } from "@/components/stores/walletStore"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import { useEffect, useState } from "react"
-import { createPublicClient, Hex, http } from "viem"
-import { linea, polygon, sepolia, zircuit } from "viem/chains"
+import { createPublicClient, http } from "viem"
+import { sepolia } from "viem/chains"
 
 const publicClient = createPublicClient({ 
   chain: sepolia,
