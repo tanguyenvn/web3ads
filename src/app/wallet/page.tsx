@@ -13,7 +13,7 @@ const publicClient = createPublicClient({
 })
 
 export default function Home() {
-  const { init, smartAddress} = useWalletStore();
+  const { smartAddress} = useWalletStore();
   const [balance, setBalance] = useState(10n)
   const router = useRouter();
   useEffect(() => {
@@ -24,14 +24,11 @@ export default function Home() {
         })
         console.log(bal)
         setBalance(bal)
-      } else {
-        await init();
-        console.log(smartAddress)
       }
     }
     initalize()
     console.log("useEffect")
-  }, [smartAddress, init]);
+  }, [smartAddress]);
 
   return <div className="grid justify-center">
       <Card> 

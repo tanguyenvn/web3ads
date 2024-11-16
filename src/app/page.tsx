@@ -3,19 +3,11 @@
 import { useWalletStore } from "@/components/stores/walletStore";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+
 export default function Home() {
   const walletStore = useWalletStore();
   const { address, smartAddress } = useWalletStore();
   const router = useRouter();
-
-  useEffect(() => {
-    const initialize = async () => {
-      await walletStore.init();
-      console.log("done init", address);
-    };
-    initialize();
-  }, []);
 
   const login = async () => {
     if (address) {
