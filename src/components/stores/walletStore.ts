@@ -84,8 +84,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     web3authInstance.configureAdapter(authAdapter);
     if (state.address) return;
     await web3authInstance.init();
-    
-    console.log(web3authInstance.connected)
+
+    console.log(web3authInstance.connected);
     const address = await web3authInstance.provider?.request({
       method: "eth_accounts",
     });
@@ -95,28 +95,28 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     const privateKey = await web3authInstance.provider?.request({
       method: "eth_private_key",
     });
-    const account = privateKeyToAccount(`0x${privateKey}`)
-    const nexusClient = await createNexusClient({ 
-        signer: account, 
-        chain: baseSepolia,
-        transport: http(), 
-        bundlerTransport: http(bundlerUrl), 
+    const account = privateKeyToAccount(`0x${privateKey}`);
+    const nexusClient = await createNexusClient({
+      signer: account,
+      chain: baseSepolia,
+      transport: http(),
+      bundlerTransport: http(bundlerUrl),
     });
     const smartAccountAddress = nexusClient.account.address;
-    
+
     console.log("connected");
 
-    const {provider} = web3authInstance;
+    const { provider } = web3authInstance;
     const localAddress = await provider?.request<undefined, Hex[]>({
       method: "eth_accounts",
     });
-    console.log(localAddress)
+    console.log(localAddress);
     set(() => ({
-        provider: provider,
-        address: localAddress?.at(0),
-        smartAddress: smartAccountAddress,
-        nexusClient: nexusClient,
-    }))
+      provider: provider,
+      address: localAddress?.at(0),
+      smartAddress: smartAccountAddress,
+      nexusClient: nexusClient,
+    }));
   },
   login: async () => {
     const state = get();
