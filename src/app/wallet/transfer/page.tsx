@@ -27,6 +27,7 @@ export default function Home() {
     const [adUrl, setAdUrl] = useState<string>("");
     const [txHash, setTxHash] = useState<string>("");
     const [sendingTx, setSendingTx] = useState(false);
+    const [txSuccess, setTxSuccess] = useState(false);
     const router = useRouter();
     const {toast} = useToast();
 
@@ -36,12 +37,14 @@ export default function Home() {
             return;
         }
         // validate amount and recipient
-        if (amount === "" || recipient === "") {
+        if (amount === "" || recipient === "" || Number(amount) <= 0) {
             toast({title: "Amount and recipient are required"})
-            // alert("Amount and recipient are required")
             return;
         }
-        toast({title: "sending transaction..."});
+        if (Number(amount) > Number(balance)) {
+            toast({title: "You're trying to send more than your balance"})
+            return;
+        }
         let hash;
         try {
             setSendingTx(true);
@@ -54,13 +57,12 @@ export default function Home() {
                     // if the error is 417 (webhook failed)
                     alert("Webhook failed, trying again...")
                 }
+                setTxSuccess(false);
                 return;
             }
             const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-            const userOp = await nexusClient.getUserOperationReceipt({ hash });
-            toast({title : `Transaction receipt:  ${receipt.transactionHash}`})
-            console.log("USEROP", userOp);
             setTxHash(receipt.transactionHash)
+            setTxSuccess(true);
         } finally {
             setSendingTx(false);
         }
@@ -145,15 +147,14 @@ export default function Home() {
                     <label className="text-sm font-semibold">Amount</label>
                     <Input className="rounded-full" onChange={(e) => setAmount(e.target.value)} value={amount} placeholder="0" />
                 </div>
-                <Result sendingTx={sendingTx} txHash={txHash} />
+                <Result sendingTx={sendingTx} txHash={txHash} isSuccess={txSuccess} />
             </div>
 
             {/* Actions */}
             <div className="flex flex-col gap-2">
-                { !gaslessDone && <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}> Watch Ads For Gasless</Button> }
-                <Button className="w-full rounded-full" onClick={() => { sendTransaction() }}>Send</Button>
+                { !gaslessDone && <Button className="w-full rounded-full" onClick={() => showAdsForGasless()}>Watch ads to enjoy duty-free transactions</Button> }
+                <Button className={gaslessDone ? "w-full rounded-full bg-green-600 text-white" : "w-full rounded-full"} onClick={() => { sendTransaction() }}>{gaslessDone ? "Send (Gasless)" : "Send"}</Button>
             </div>
-            {gaslessDone && <div> Gasless Transaction Enabled </div>}
             {showAds && <AdsCard adUrl={adUrl} onClosed={(result) => {onAdsEnded(result)}} />}
         </div>
     )
