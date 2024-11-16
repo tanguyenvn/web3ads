@@ -6,7 +6,6 @@ import { useCountdownTimer } from "@/lib/countdown";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-
 // const imageLoader = ({ src, width, quality }: {src: string, width: number, quality?: number}) => {
 //     return `${src}?w=${width}&q=${quality || 75}`
 //   }
@@ -14,6 +13,7 @@ import { useEffect, useState } from "react";
 // get ads from server
 // on close call end ads api to server
 export default function AdsCard(params: {
+    adUrl: string,
     onClosed: ( result: boolean) => void
 }) {
     const { secondsLeft, isActive, handleRestart } = useCountdownTimer();
@@ -22,8 +22,8 @@ export default function AdsCard(params: {
     useEffect(() => {
         // call api to end get ads
         handleRestart(5);
-        setAdsUrl("https://s2.coinmarketcap.com/static/img/coins/64x64/1.png")
-    }, [handleRestart])
+        setAdsUrl(params.adUrl)
+    }, [])
 
     useEffect(() => {
         if ( !isActive && adsUrl ) {

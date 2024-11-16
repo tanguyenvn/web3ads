@@ -6,11 +6,11 @@ export async function GET(
 ) {
     try {
         const { searchParams } = new URL(request.url);
-        const tx_hash = searchParams.get('tx_hash');
+        const from_address = searchParams.get('from_address');
         const chain_id = searchParams.get('chain_id');
 
-        if (!tx_hash || !chain_id) {
-            return Response.json({ success: false, error: 'Missing tx_hash or chain_id' }, { status: 400 });
+        if (!from_address || !chain_id) {
+            return Response.json({ success: false, error: 'Missing from_address or chain_id' }, { status: 400 });
         }
 
         // get the ad
@@ -23,14 +23,19 @@ export async function GET(
                 { status: 404 }
             );
         }
-        
-        // create ad_views record
-        await sql`
-            INSERT INTO ad_views (tx_hash, ad_id, created_at)
-            VALUES (${tx_hash}, ${rows[0].id}, NOW())
-            RETURNING *
-        `;
 
+        // check if the ad_views record exists
+        const { rows: adViewsRows } = await sql`
+            SELECT * FROM ad_views WHERE from_address = ${from_address} AND ad_id = ${rows[0].id} AND viewed = false
+        `;
+        if (adViewsRows.length === 0) {
+            // create ad_views record
+            await sql`
+                INSERT INTO ad_views (from_address, ad_id, created_at)
+                VALUES (${from_address}, ${rows[0].id}, NOW())
+                RETURNING *
+            `;
+        }
         return Response.json({ success: true, data: rows[0] });
     } catch (error) {
         console.error('Failed to fetch ad:', error);
@@ -43,11 +48,13 @@ export async function GET(
 
 // mark the ad as viewed
 export async function POST(request: Request) {
-    const { tx_hash } = await request.json();
+    const { chain_id, from_address } = await request.json();
 
     // check if the ad exists
     const { rows } = await sql`
-        SELECT * FROM ad_views WHERE tx_hash = ${tx_hash}
+        SELECT * FROM ad_views
+        INNER JOIN ads ON ad_views.ad_id = ads.id
+        WHERE ad_views.from_address = ${from_address} AND ad_views.viewed = false AND ads.chain_id = ${chain_id}
     `;
     if (rows.length === 0) {
         return Response.json({ success: false, error: 'Ad not found' }, { status: 404 });
@@ -59,12 +66,8 @@ export async function POST(request: Request) {
 
     // mark the ad as viewed
     const { rows: updatedRows } = await sql`
-        UPDATE ad_views SET viewed = true WHERE tx_hash = ${tx_hash}
+        UPDATE ad_views SET viewed = true WHERE from_address = ${from_address} AND viewed = false
     `;
 
     return Response.json({ success: true, data: updatedRows[0] });
 }
-
-// curl -X POST http://localhost:3000/api/ad -H "Content-Type: application/json" -d '{"tx_hash": "asdfsdfsd"}'
-// get ads
-// curl -X GET http://localhost:3000/api/ad?id=1
