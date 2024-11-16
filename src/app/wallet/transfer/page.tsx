@@ -2,6 +2,7 @@
 import { Ad } from "@/app/utils/interface"
 import AdsCard from "@/components/ads/ads"
 import { useWalletStore } from "@/components/stores/walletStore"
+import Result from "@/components/transaction/result"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,8 @@ export default function Home() {
     const [gaslessDone, setGaslessDone] = useState(false)
     const {nexusClient, smartAddress, chain, balance} = useWalletStore();
     const [adUrl, setAdUrl] = useState<string>("");
+    const [txHash, setTxHash] = useState<string>("");
+    const [sendingTx, setSendingTx] = useState(false);
     const router = useRouter();
     const {toast} = useToast();
 
@@ -41,18 +44,26 @@ export default function Home() {
         toast({title: "sending transaction..."});
         let hash;
         try {
-            hash = await nexusClient.sendTransaction({ calls:  
-                [{to : recipient as Hex, value: parseEther(amount)}] },
-            ); 
-        } catch (e) {
-            if (e instanceof HttpRequestError) {
-                // if the error is 417 (webhook failed)
-                alert("Webhook failed, trying again...")
+            setSendingTx(true);
+            try {
+                hash = await nexusClient.sendTransaction({ calls:  
+                    [{to : recipient as Hex, value: parseEther(amount)}] },
+                ); 
+            } catch (e) {
+                if (e instanceof HttpRequestError) {
+                    // if the error is 417 (webhook failed)
+                    alert("Webhook failed, trying again...")
+                }
+                return;
             }
-            return;
+            const receipt = await nexusClient.waitForTransactionReceipt({ hash });
+            const userOp = await nexusClient.getUserOperationReceipt({ hash });
+            toast({title : `Transaction receipt:  ${receipt.transactionHash}`})
+            console.log("USEROP", userOp);
+            setTxHash(receipt.transactionHash)
+        } finally {
+            setSendingTx(false);
         }
-        const receipt = await nexusClient.waitForTransactionReceipt({ hash });
-        toast({title : `Transaction receipt:  ${receipt.transactionHash}`})
     }
 
     const showAdsForGasless = async () => {
@@ -134,6 +145,7 @@ export default function Home() {
                     <label className="text-sm font-semibold">Amount</label>
                     <Input className="rounded-full" onChange={(e) => setAmount(e.target.value)} value={amount} placeholder="0" />
                 </div>
+                <Result sendingTx={sendingTx} txHash={txHash} />
             </div>
 
             {/* Actions */}
