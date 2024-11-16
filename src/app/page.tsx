@@ -104,7 +104,15 @@ export default function Home() {
       <p>
         {loggedIn ? (
           <>
-            Logged in as ${account}
+            Logged in as{" "}
+            <a
+              className="text-blue-500 underline"
+              href={`https://eth.blockscout.com/address/${account}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {account}
+            </a>
             <br />
             <Button
               onClick={() => {
