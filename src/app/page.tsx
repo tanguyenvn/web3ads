@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-
+import { useRouter } from 'next/navigation'
 import { useWalletStore } from "@/components/stores/walletStore";
 import { AuthAdapter } from "@web3auth/auth-adapter";
 import {
@@ -12,10 +12,10 @@ import {
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
 import { useEffect  } from "react";
-
 export default function Home() {
   const walletStore = useWalletStore();
   const {address} =useWalletStore();
+  const router = useRouter()
   
   const clientId =
     "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ";
@@ -63,7 +63,7 @@ export default function Home() {
       console.log("done init", address)
     }
     initialize();
-  }, []);
+  }, [address]);
 
   const login = async () => {
     if (address) {
@@ -102,8 +102,8 @@ export default function Home() {
       </p>
 
       <hr></hr>
-      <Button>User Wallet</Button>
-      <Button>Dashboard</Button>
+      <Button onClick={() => {router.push("/wallet")}}>User Wallet</Button>
+      <Button onClick={() => {router.push("/dashboard")}}>Dashboard</Button>
     </>
   );
 }
