@@ -62,7 +62,7 @@ export interface WalletState {
   address: Hex | undefined;
   smartAddress: Hex | undefined;
   nexusClient: NexusClient | null;
-  chain: Chain | null;
+  chain: Chain;
   web3authInstance: Web3AuthNoModal| null;
   init: () => Promise<void>;
   login: () => Promise<void>;
