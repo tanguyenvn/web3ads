@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Receive from "@/components/wallet/receive";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -85,12 +86,7 @@ export default function Home() {
             >
               Send
             </Button>
-            <Button
-              className="rounded-full"
-              onClick={() => router.push("/wallet/receive")}
-            >
-              Receive
-            </Button>
+            <Receive />
           </div>
         </CardHeader>
       </Card>
