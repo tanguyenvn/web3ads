@@ -1,5 +1,5 @@
+import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/toaster"
 
 import "../globals.css";
 
@@ -15,9 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return <div className="grid justify-self-center max-w-xl" >
-    <div className=""> 
-        {children}
-        <Toaster />
+    <div className="">
+      {children}
+      <Toaster />
     </div>
   </div>
 }
